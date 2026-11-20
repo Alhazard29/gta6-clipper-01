@@ -5,6 +5,7 @@
 // randomness: two runs on the same repository produce identical output.
 // All repository paths are anchored to this file's directory, never to the
 // process working directory.
+import { createHash } from "node:crypto";
 import { copyFileSync, existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -44,6 +45,7 @@ function main(): void {
   }
   const video = readJson<VideoLink>("VIDEO.json");
   const clipStat = statSync(join(ROOT, clip.clip_file));
+  const clipSha256 = createHash("sha256").update(readFileSync(join(ROOT, clip.clip_file))).digest("hex");
   const sceneBytes = clip.scenes.map((scene) => statSync(join(ROOT, scene.file)).size);
 
   const dossier = {
@@ -57,6 +59,7 @@ function main(): void {
     clip: {
       file: clip.clip_file,
       bytes: clipStat.size,
+      sha256: clipSha256,
       width: clip.width,
       height: clip.height,
       fps: clip.fps,
